@@ -1,6 +1,7 @@
 import pandas as pd
 import mlflow
 import mlflow.sklearn
+import dagshub
 import matplotlib.pyplot as plt
 import json
 
@@ -16,6 +17,12 @@ from sklearn.metrics import (
     f1_score,
     confusion_matrix,
     ConfusionMatrixDisplay
+)
+
+dagshub.init(
+    repo_owner="annamaulina654",
+    repo_name="MLSystem-Telco-Churn",
+    mlflow=True
 )
 
 # Load dataset
@@ -71,8 +78,8 @@ with mlflow.start_run():
 
     # model
     mlflow.sklearn.log_model(
-        best_model,
-        artifact_path="model"
+        sk_model=best_model,
+        name="model"
     )
 
     # artifact 1
@@ -99,6 +106,36 @@ with mlflow.start_run():
         json.dump(metric_info, f, indent=4)
 
     mlflow.log_artifact("metric_info.json")
+
+    # artifact 3 - feature importance
+    feature_importance = pd.DataFrame({
+        "feature": X.columns,
+        "importance": best_model.feature_importances_
+    })
+
+    feature_importance.to_csv(
+        "feature_importance.csv",
+        index=False
+    )
+
+    mlflow.log_artifact(
+        "feature_importance.csv"
+    )
+
+    # artifact 4 - best parameter
+    with open(
+        "best_params.json",
+        "w"
+    ) as f:
+        json.dump(
+            grid_search.best_params_,
+            f,
+            indent=4
+        )
+
+    mlflow.log_artifact(
+        "best_params.json"
+    )
 
 print("Best Parameters:", grid_search.best_params_)
 print("Accuracy:", accuracy)
