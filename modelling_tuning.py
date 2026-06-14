@@ -78,8 +78,8 @@ with mlflow.start_run():
 
     # model
     mlflow.sklearn.log_model(
-        sk_model=best_model,
-        name="model"
+        best_model,
+        "model"
     )
 
     # artifact 1
